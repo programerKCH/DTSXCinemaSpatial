@@ -10,6 +10,8 @@ namespace immersive {
 struct HostCapabilities {
     bool hasDiscreteTopFrontPair = false;
     bool spatialObjectsAvailable = false;
+    HostCapabilities() = default;
+    HostCapabilities(bool heights, bool objects) : hasDiscreteTopFrontPair(heights), spatialObjectsAvailable(objects) {}
 };
 enum class Route { Bed51, Virtual51, Discrete512 };
 struct RenderSample {
