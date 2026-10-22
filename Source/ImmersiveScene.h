@@ -14,6 +14,7 @@ struct ObjectEstimate {
 };
 struct Frame {
     std::array<float, 6> channels{}; // L,R,C,LFE,SL,SR
+    std::array<float, 2> height{}; // top left/right bus, only valid when negotiated
     ObjectEstimate scene{};
     bool realHeightAvailable = false;
     bool realHeightActive = false;
@@ -23,11 +24,13 @@ class SceneEngine {
     float leftEnergy = 0, rightEnergy = 0, centerEnergy = 0;
     float surroundEnergy = 0, previousAzimuth = 0, smoothAzimuth = 0;
     float movement = 0, virtualEnvelope = 0;
+    float heightLowL = 0, heightLowR = 0;
 public:
     void reset(float rate) {
         sampleRate = std::max(rate, 8000.0f);
         leftEnergy = rightEnergy = centerEnergy = surroundEnergy = 0;
         previousAzimuth = smoothAzimuth = movement = virtualEnvelope = 0;
+        heightLowL = heightLowR = 0;
     }
     Frame process(const std::array<float, 6>& input, HeightMode mode,
                   bool spatialRendererHasHeight, float amount = 1.0f) {
@@ -59,7 +62,17 @@ public:
             result.channels[4] = input[4] + width * (input[4] - input[5]);
             result.channels[5] = input[5] + width * (input[5] - input[4]);
         } else if (mode == HeightMode::Real && spatialRendererHasHeight) {
-            // No fake height in PCM: the separate spatial output adapter must consume scene metadata.
+            // Extract diffuse surround highs into a separate height bus (5.1.2 prototype).
+            // Center and LFE remain untouched. Do not amplify the bed when height is active.
+            const float alpha = smooth(650.0f);
+            heightLowL += alpha * (input[4] - heightLowL);
+            heightLowR += alpha * (input[5] - heightLowR);
+            const float wet = std::clamp(amount, 0.0f, 1.0f) * 0.28f * diffuse;
+            const float extractedL = wet * (input[4] - heightLowL);
+            const float extractedR = wet * (input[5] - heightLowR);
+            result.height = { extractedL, extractedR };
+            result.channels[4] -= extractedL;
+            result.channels[5] -= extractedR;
             result.realHeightActive = true;
         }
         return result;
