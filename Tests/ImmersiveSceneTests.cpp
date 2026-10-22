@@ -1,4 +1,4 @@
-#include "../Source/ImmersiveScene.h"
+#include "../Source/ImmersiveOutput.h"
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -12,6 +12,11 @@ int main() {
     assert(unsupported.channels == x && !unsupported.realHeightActive);
     auto supported = engine.process(x, immersive::HeightMode::Real, true);
     assert(supported.realHeightActive);
+    const auto packed = immersive::packInternal512(supported);
+    assert(packed.hasHeight && packed.sample[6] == supported.height[0] &&
+           packed.sample[7] == supported.height[1]);
+    const auto noHeight = immersive::packInternal512(unsupported);
+    assert(!noHeight.hasHeight && noHeight.sample[6] == 0.0f && noHeight.sample[7] == 0.0f);
     assert(supported.channels[0] == x[0] && supported.channels[1] == x[1]);
     assert(supported.channels[2] == x[2] && supported.channels[3] == x[3]);
     assert(std::fabs((supported.channels[4] + supported.height[0]) - x[4]) < 1e-6f);
