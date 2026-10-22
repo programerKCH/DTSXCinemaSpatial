@@ -50,6 +50,12 @@ jobs:
           set -euxo pipefail
           g++ -std=c++14 -O2 -Wall -Wextra -Werror Tools/SpatialSceneFromWav.cpp -o /tmp/SpatialSceneFromWav
 
+      - name: C++14 scene classifier regressions
+        run: |
+          set -euxo pipefail
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/SceneClassifierTests.cpp -o /tmp/SceneClassifierTests
+          /tmp/SceneClassifierTests
+
   windows-endpoint-probe:
     runs-on: windows-latest
     steps:
