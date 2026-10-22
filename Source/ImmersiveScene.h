@@ -66,8 +66,16 @@ public:
             const float target = bounded(amount, 0.0f, 1.0f) * diffuse;
             virtualEnvelope += smooth(3.0f) * (target - virtualEnvelope);
             const float width = bounded(0.08f * virtualEnvelope * transientDuck, 0.0f, 0.08f);
-            result.channels[4] = input[4] + width * (input[4] - input[5]);
-            result.channels[5] = input[5] + width * (input[5] - input[4]);
+            // Preserve the original rear-channel sum (mono ambience and bass
+            // balance) while widening only the difference signal. Bound peaks
+            // conservatively; the main v4.5 DSP is not modified.
+            const float side = 0.5f * (input[4] - input[5]);
+            const float delta = width * side;
+            const float peak = std::max(std::fabs(input[4]), std::fabs(input[5]));
+            const float headroom = std::max(0.0f, 0.98f - peak);
+            const float safeDelta = bounded(delta, -headroom, headroom);
+            result.channels[4] = input[4] + safeDelta;
+            result.channels[5] = input[5] - safeDelta;
         } else if (mode == HeightMode::Real && spatialRendererHasHeight) {
             // Extract diffuse surround highs into a separate height bus (5.1.2 prototype).
             // Center and LFE remain untouched. Do not amplify the bed when height is active.
