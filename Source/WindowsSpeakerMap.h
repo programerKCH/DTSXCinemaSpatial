@@ -13,6 +13,8 @@ constexpr std::uint32_t MASK_512_SIDE_FRONT=MASK_51_SIDE|TFL|TFR;
 struct EndpointLayout {
     std::uint32_t mask=0;
     unsigned int channels=0;
+    EndpointLayout() = default;
+    EndpointLayout(std::uint32_t speakerMask, unsigned int count) : mask(speakerMask), channels(count) {}
 };
 inline bool hasExact512(const EndpointLayout& layout) {
     return layout.channels==8 && layout.mask==MASK_512_SIDE_FRONT;
