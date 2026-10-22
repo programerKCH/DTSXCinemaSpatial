@@ -33,6 +33,16 @@ int main() {
     assert(virt.channels[0] == x[0] && virt.channels[1] == x[1] &&
            virt.channels[2] == x[2] && virt.channels[3] == x[3]);
     assert(virt.channels[4] != x[4] && virt.channels[5] != x[5]);
+    // v5 VST path: virtual widening must not change the rear-channel sum.
+    assert(std::fabs((virt.channels[4]+virt.channels[5])-(x[4]+x[5]))<1e-6f);
+    engine.reset(48000);
+    const std::array<float,6> nearPeak{{0.2f,0.1f,0.0f,0.0f,0.95f,-0.95f}};
+    immersive::Frame protectedFrame{};
+    for(int i=0;i<48000;++i) protectedFrame=engine.process(
+        nearPeak,immersive::HeightMode::Virtual,false);
+    assert(std::fabs(protectedFrame.channels[4])<=0.980001f);
+    assert(std::fabs(protectedFrame.channels[5])<=0.980001f);
+    assert(std::fabs(protectedFrame.channels[4]+protectedFrame.channels[5])<1e-5f);
     assert(virt.scene.azimuth < 0.0f);
     assert(std::isfinite(virt.scene.elevation));
 }
