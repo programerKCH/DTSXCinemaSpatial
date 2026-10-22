@@ -31,4 +31,18 @@ int main(){
     for(unsigned i=0;i<6;++i) assert(x[i]==float(i+1)*0.125f);
     assert(!reader.next(x));
     std::remove(file.c_str());
+    // Corrupted IEEE-float subtype GUID must fail open().
+    {
+      std::ofstream o(file,std::ios::binary);
+      o.write("RIFF",4);u32(o,84);o.write("WAVE",4);
+      o.write("fmt ",4);u32(o,40);u16(o,0xfffe);u16(o,6);u32(o,48000);
+      u32(o,48000*24);u16(o,24);u16(o,32);u16(o,22);
+      u16(o,32);u32(o,0x60f);u32(o,3);
+      const char badTail[12]={0,0,16,0,0,0,0,0,0,0,0,0};
+      o.write(badTail,12);
+      o.write("data",4);u32(o,24);
+      for(int i=0;i<6;++i)u32(o,0);
+    }
+    assert(!reader.open(file));
+    std::remove(file.c_str());
 }
