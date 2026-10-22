@@ -16,6 +16,8 @@ jobs:
           /tmp/spatial-bridge-tests
           g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/WindowsSpeakerMapTests.cpp -o /tmp/speaker-map-tests
           /tmp/speaker-map-tests
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/LeafReferenceScenarios.cpp -o /tmp/leaf-reference-tests
+          /tmp/leaf-reference-tests
 
   windows-endpoint-probe:
     runs-on: windows-latest
