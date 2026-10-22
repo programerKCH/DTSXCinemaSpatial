@@ -56,6 +56,12 @@ jobs:
           g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/SceneClassifierTests.cpp -o /tmp/SceneClassifierTests
           /tmp/SceneClassifierTests
 
+      - name: C++14 bed and object routing safety
+        run: |
+          set -euxo pipefail
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/BedObjectSplitterTests.cpp -o /tmp/BedObjectSplitterTests
+          /tmp/BedObjectSplitterTests
+
   windows-endpoint-probe:
     runs-on: windows-latest
     steps:
