@@ -14,3 +14,5 @@ jobs:
           /tmp/immersive-scene-tests
           g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/SpatialHostBridgeTests.cpp -o /tmp/spatial-bridge-tests
           /tmp/spatial-bridge-tests
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/WindowsSpeakerMapTests.cpp -o /tmp/speaker-map-tests
+          /tmp/speaker-map-tests
