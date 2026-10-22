@@ -40,6 +40,16 @@ jobs:
           g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/SceneObjectMapperTests.cpp -o /tmp/SceneObjectMapperTests
           /tmp/SceneObjectMapperTests
 
+      - name: C++14 real 5.1 WAV file reader
+        run: |
+          set -euxo pipefail
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/Float51WavReaderTests.cpp -o /tmp/Float51WavReaderTests
+          /tmp/Float51WavReaderTests
+      - name: C++14 real 5.1 scene export tool
+        run: |
+          set -euxo pipefail
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tools/SpatialSceneFromWav.cpp -o /tmp/SpatialSceneFromWav
+
   windows-endpoint-probe:
     runs-on: windows-latest
     steps:
