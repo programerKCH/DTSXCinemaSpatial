@@ -41,9 +41,17 @@ public:
                 std::uint16_t validBits=0; std::uint32_t subFormat=0;
                 if(!readU16(file,validBits)||!readU32(file,channelMask)||
                    !readU32(file,subFormat))return false;
+                // The whole IEEE_FLOAT subtype GUID is mandatory, not just Data1=3.
+                const unsigned char expectedGuidTail[12]={
+                    0x00,0x00,0x10,0x00,0x80,0x00,0x00,0xaa,0x00,0x38,0x9b,0x71
+                };
+                unsigned char guidTail[12]={};
+                if(!file.read(reinterpret_cast<char*>(guidTail),12)) return false;
                 fmtOk=(format==0xfffe && channels==6 && rate==48000 &&
+                       bytesPerSec==48000u*24u &&
                        alignment==24 && bits==32 && extra>=22 &&
-                       validBits==32 && channelMask==0x60f && subFormat==3);
+                       validBits==32 && channelMask==0x60f && subFormat==3 &&
+                       std::memcmp(guidTail,expectedGuidTail,12)==0);
             } else if(std::memcmp(tag,"data",4)==0) {
                 if(!fmtOk || size%24!=0) return false;
                 remaining=size;valid=true;return true;
@@ -63,6 +71,8 @@ public:
             word=std::uint32_t(bytes[i])|(std::uint32_t(bytes[i+1])<<8)|
                  (std::uint32_t(bytes[i+2])<<16)|(std::uint32_t(bytes[i+3])<<24);
             std::memcpy(&out[c],&word,4);
+            // Reject corrupted/non-finite input before it reaches spatial DSP.
+            if ((word & 0x7f800000u) == 0x7f800000u) {valid=false;return false;}
         }
         remaining-=24;return true;
     }
