@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
     }
     if (SUCCEEDED(hr)) {
         hr = stream->Start();
+        const bool started=SUCCEEDED(hr);
         UINT64 rendered = 0;
         immersive::BedObjectSplitter splitter;
         const AudioObjectType staticTypes[6]={AudioObjectType_FrontLeft,AudioObjectType_FrontRight,
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
         analyzer.reset(48000.0f);
         mapper.reset(48000.0f);
         while (SUCCEEDED(hr) && !eof) {
-            if (WaitForSingleObject(ready, 100) != WAIT_OBJECT_0) {
+            if (WaitForSingleObject(ready, 2000) != WAIT_OBJECT_0) {
                 hr = HRESULT_FROM_WIN32(WAIT_TIMEOUT);
                 break;
             }
@@ -162,14 +163,14 @@ int main(int argc, char** argv) {
             else if (FAILED(ended)) hr=ended;
             rendered += frames;
         }
-        for(auto& o:staticObjects) if(o) { o->Release();o=nullptr; }
-        if (moving) {
-            moving->SetEndOfStream(0);
-            moving->Release();
+        if (started) {
+            const HRESULT stop=stream->Stop();
+            if (SUCCEEDED(hr) && FAILED(stop)) hr=stop;
         }
-        stream->Stop();
+        for(auto& o:staticObjects) if(o) { o->Release();o=nullptr; }
+        if (moving) { moving->Release();moving=nullptr; }
     }
-    std::printf("Spatial WAV object demo result: 0x%08lx; dynamic objects %u\\n",
+    std::printf("Spatial WAV object demo result: 0x%08lx; dynamic objects %u\n",
                 static_cast<unsigned long>(hr),static_cast<unsigned>(available));
     std::puts("5.1 static bed plus optional extracted dynamic surround object; NOT system-wide audio interception.");
     release(stream);
