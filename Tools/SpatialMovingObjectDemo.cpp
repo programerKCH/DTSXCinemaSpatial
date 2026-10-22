@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstring>
 #include <algorithm>
+#include "../Source/SceneObjectMapper.h"
 
 template <typename T> void release(T*& pointer) { if (pointer) { pointer->Release(); pointer=nullptr; } }
 
@@ -69,6 +70,10 @@ int wmain(int argc, wchar_t** argv) {
         const float pi = 3.14159265358979323846f;
         UINT64 rendered = 0;
         ISpatialAudioObject* moving = nullptr;
+        immersive::SceneEngine analyzer;
+        immersive::SceneObjectMapper mapper;
+        analyzer.reset(48000.0f);
+        mapper.reset(48000.0f);
         while (SUCCEEDED(hr) && rendered < 144000) {
             if (WaitForSingleObject(ready, 100) != WAIT_OBJECT_0) {
                 hr = HRESULT_FROM_WIN32(WAIT_TIMEOUT);
@@ -93,10 +98,19 @@ int wmain(int argc, wchar_t** argv) {
                             const float fade = std::min(1.0f,std::min(t*5.0f,(3.0f-t)*5.0f));
                             pcm[j] = 0.035f * std::max(0.0f,fade) * std::sin(2.0f*pi*440.0f*t);
                         }
-                        const float t = static_cast<float>(rendered)/48000.0f;
-                        const float angle = (t/3.0f)*2.0f*pi;
-                        processing = moving->SetPosition(1.5f*std::sin(angle),
-                                                         0.4f, -1.5f*std::cos(angle));
+                        // Synthetic 5.1 motion scene, not an external program audio feed.
+                        // Analyze changing front-channel balance instead of driving an orbit.
+                        immersive::Frame scene{};
+                        for (UINT32 j=0;j<frames;++j) {
+                            const float t = static_cast<float>(rendered+j)/48000.0f;
+                            const float pan = std::sin((t/3.0f)*2.0f*pi);
+                            const float l = (1.0f-pan)*0.08f;
+                            const float r = (1.0f+pan)*0.08f;
+                            scene=analyzer.process({{l,r,0.0f,0.0f,0.025f,0.025f}},
+                                                   immersive::HeightMode::Off,false);
+                        }
+                        const auto position=mapper.update(scene.scene,frames);
+                        processing = moving->SetPosition(position.x,position.y,position.z);
                     }
                 }
             }
