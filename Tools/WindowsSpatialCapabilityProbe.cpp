@@ -1,5 +1,6 @@
 // Read-only Windows Spatial Sound capability probe.
 // Does not capture system audio, create objects, or alter the default endpoint.
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mmdeviceapi.h>
