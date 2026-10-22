@@ -12,3 +12,5 @@ jobs:
         run: |
           g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/ImmersiveSceneTests.cpp -o /tmp/immersive-scene-tests
           /tmp/immersive-scene-tests
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/SpatialHostBridgeTests.cpp -o /tmp/spatial-bridge-tests
+          /tmp/spatial-bridge-tests
