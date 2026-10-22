@@ -55,6 +55,14 @@ int main() {
     assert(rearLeft.scene.azimuth < -10.0f);
     assert(rearRight.scene.azimuth > 10.0f);
     assert(rearRight.channels[2] == 0.0f && rearRight.channels[3] == 0.0f);
+    // Switching the in-plugin Virtual Height strength to zero must bypass
+    // instantly without leaving stale virtual width on the audio channels.
+    const auto bypassed = engine.process(x, immersive::HeightMode::Virtual, false, 0.0f);
+    assert(bypassed.channels == x);
+    // Re-enabling should remain finite and retain untouched dialog and LFE.
+    const auto reenabled = engine.process(x, immersive::HeightMode::Virtual, false, 1.0f);
+    for(float channel : reenabled.channels) assert(std::isfinite(channel));
+    assert(reenabled.channels[2] == x[2] && reenabled.channels[3] == x[3]);
     assert(virt.scene.azimuth < 0.0f);
     assert(std::isfinite(virt.scene.elevation));
 }
