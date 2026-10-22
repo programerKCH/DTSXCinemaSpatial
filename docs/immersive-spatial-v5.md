@@ -25,3 +25,29 @@ One shared DSP for PCM stereo/5.1 sources; maximize positional clarity without a
 - Do not mutate stable Impact, Strike, Bass, loudness or limiter coefficients.
 - No faux Atmos/DTS:X metadata, no unlicensed stream-encoder claims.
 - Never mix synthesized moving objects on top of the unchanged channels at full level (double energy).
+
+
+## Requested Height Mode behavior (product contract)
+- Off: no synthetic elevation layer; keep original channel bed unchanged.
+- Virtual Height: derive a restrained, time-aligned height impression from diffuse ambience/moving effects and mix into existing surround PCM channels. Never masquerade as an actual ceiling speaker or alter direct dialogue/localization.
+- Real Height: ONLY when an output host has negotiated dedicated height/static spatial channels or supported spatial objects. Route scene elements to the actual height-capable renderer/channel slots (e.g., supported top front/top rear static objects); DO NOT simply add them to surround.
+- When Real Height is selected but no capable renderer/height channels are available, display an explicit unsupported/fallback status and use Virtual Height only if opted in. Never silently label virtual surround as real height.
+- Height Volume scales the synthesized elevation layer only, independently of Cinema Impact/Strike/Bass.
+
+## Listening reference: Sennheiser AMBEO soundbar immersive mode
+Design goal, not reverse engineering: expansive but coherent lateral and vertical ambience, convincing smooth object trajectories, grounded dialogue and unchanged clean v4.5 transient/bass signature. Avoid over-brightness, echo, artificial phase artifacts or duplicate source energy.
+
+## Common Atmos / DTS:X routing policy
+- Use a format-neutral scene bus: {azimuth,elevation,distance,spread,confidence,wet_gain} plus stationary multichannel bed.
+- Apply the SAME source-analysis engine across outputs. A host adapter interrogates the OS-selected spatial render endpoint instead of assuming a codec from configuration labels.
+- When supported, bind dynamic objects through Windows Spatial Sound APIs and static height channel objects where available. Let Windows/spatial provider render to Dolby Atmos for Home Theater or DTS:X for Home Theater as supported; the VST itself must not claim to encode either codec.
+- Preserve front/center/LFE integrity. Energy-budget any extracted object against its bed source to avoid loudness doubling. Smooth positions and avoid hard swings across speakers.
+- Return exact matched 5.1 PCM on unsupported paths, not an unverified synthetic object bitstream.
+- Ensure scene analysis and real-height output do not execute twice if a spatial game is already delivering native positioned objects.
+
+## Acceptance tests
+1. Original v4.5 reference null-test against unchanged PCM fallback.
+2. Virtual Height/Real Height/Off differ in destination routing, not in Impact/Strike or default bass.
+3. Real Height routes to top channels only on genuinely compatible hardware; unsupported status is visible.
+4. Repeatable pans, flyover sounds, overhead rain and fixed centered dialogue: object positions stable, no clicking/booming/peak overload.
+5. Verify user setup: RTX 5080, Windows 11, Onkyo TX-NR6100, connected display; test eARC and direct-AVR separately for output caps and negotiated format.
