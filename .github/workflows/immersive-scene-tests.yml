@@ -8,17 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compile and test scene engine
+      - name: Compile and test scene engine under legacy VST compatible C++14
         run: |
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/ImmersiveSceneTests.cpp -o /tmp/immersive-scene-tests
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/ImmersiveSceneTests.cpp -o /tmp/immersive-scene-tests
           /tmp/immersive-scene-tests
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/SpatialHostBridgeTests.cpp -o /tmp/spatial-bridge-tests
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/SpatialHostBridgeTests.cpp -o /tmp/spatial-bridge-tests
           /tmp/spatial-bridge-tests
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/WindowsSpeakerMapTests.cpp -o /tmp/speaker-map-tests
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/WindowsSpeakerMapTests.cpp -o /tmp/speaker-map-tests
           /tmp/speaker-map-tests
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/LeafReferenceScenarios.cpp -o /tmp/leaf-reference-tests
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/LeafReferenceScenarios.cpp -o /tmp/leaf-reference-tests
           /tmp/leaf-reference-tests
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/AmazeReferenceScenarios.cpp -o /tmp/amaze-reference-tests
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/AmazeReferenceScenarios.cpp -o /tmp/amaze-reference-tests
           /tmp/amaze-reference-tests
 
   windows-endpoint-probe:
