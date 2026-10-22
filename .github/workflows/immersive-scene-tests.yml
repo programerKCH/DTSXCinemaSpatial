@@ -16,3 +16,18 @@ jobs:
           /tmp/spatial-bridge-tests
           g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/WindowsSpeakerMapTests.cpp -o /tmp/speaker-map-tests
           /tmp/speaker-map-tests
+
+  windows-endpoint-probe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile Windows WASAPI endpoint diagnostic
+        shell: cmd
+        run: |
+          call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cl /nologo /std:c++17 /EHsc /W4 /WX Tools\WindowsEndpointProbe.cpp /Fe:WindowsEndpointProbe.exe ole32.lib uuid.lib
+      - name: Upload Windows endpoint diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: WindowsEndpointProbe-experimental
+          path: WindowsEndpointProbe.exe
