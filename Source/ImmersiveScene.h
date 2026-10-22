@@ -68,8 +68,9 @@ public:
             heightLowL += alpha * (input[4] - heightLowL);
             heightLowR += alpha * (input[5] - heightLowR);
             const float wet = std::clamp(amount, 0.0f, 1.0f) * 0.28f * diffuse;
-            const float extractedL = wet * (input[4] - heightLowL);
-            const float extractedR = wet * (input[5] - heightLowR);
+            // No ghost height when the authored surround channel has fallen silent.
+            const float extractedL = input[4] == 0.0f ? 0.0f : wet * (input[4] - heightLowL);
+            const float extractedR = input[5] == 0.0f ? 0.0f : wet * (input[5] - heightLowR);
             result.height = { extractedL, extractedR };
             result.channels[4] -= extractedL;
             result.channels[5] -= extractedR;
