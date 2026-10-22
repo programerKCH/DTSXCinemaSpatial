@@ -41,11 +41,22 @@ jobs:
       - name: Prepare MSVC toolchain
         uses: ilammy/msvc-dev-cmd@v1
       - name: Compile Windows WASAPI endpoint diagnostic
-        shell: cmd
-        run: cl /nologo /std:c++17 /EHsc /W4 Tools\WindowsEndpointProbe.cpp /Fe:WindowsEndpointProbe.exe ole32.lib uuid.lib
+        shell: pwsh
+        run: |
+          cl /nologo /std:c++17 /EHsc /W4 Tools/WindowsEndpointProbe.cpp /Fe:WindowsEndpointProbe.exe ole32.lib uuid.lib 2>&1 | Tee-Object -FilePath endpoint-build.log
+          if ($LASTEXITCODE -ne 0) { throw "WindowsEndpointProbe compile failed ($LASTEXITCODE)" }
       - name: Compile Windows spatial object capability probe
-        shell: cmd
-        run: cl /nologo /std:c++17 /EHsc /W4 Tools\WindowsSpatialCapabilityProbe.cpp /Fe:WindowsSpatialCapabilityProbe.exe ole32.lib uuid.lib
+        shell: pwsh
+        run: |
+          cl /nologo /std:c++17 /EHsc /W4 Tools/WindowsSpatialCapabilityProbe.cpp /Fe:WindowsSpatialCapabilityProbe.exe ole32.lib uuid.lib 2>&1 | Tee-Object -FilePath spatial-build.log
+          if ($LASTEXITCODE -ne 0) { throw "WindowsSpatialCapabilityProbe compile failed ($LASTEXITCODE)" }
+      - name: Upload Windows compiler logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Probe-Build-Logs
+          path: '*-build.log'
+          if-no-files-found: warn
       - name: Upload Windows endpoint diagnostic
         uses: actions/upload-artifact@v4
         with:
