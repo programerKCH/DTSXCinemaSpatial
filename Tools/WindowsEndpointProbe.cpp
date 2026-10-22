@@ -1,4 +1,5 @@
 // Windows-only endpoint format diagnostic. Does not open or replace the audio stream.
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mmdeviceapi.h>
