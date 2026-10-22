@@ -125,6 +125,16 @@ jobs:
         with:
           name: SpatialBedObjectDemo-experimental
           path: SpatialBedObjectDemo.exe
+      - name: Compile read-only system-mix loopback feasibility probe
+        shell: pwsh
+        run: |
+          cl /nologo /std:c++17 /EHsc /W4 Tools/WasapiLoopbackProbe.cpp /Fe:WasapiLoopbackProbe.exe ole32.lib uuid.lib 2>&1 | Tee-Object -FilePath loopback-build.log
+          if ($LASTEXITCODE -ne 0) { throw "Loopback probe compile failed ($LASTEXITCODE)" }
+      - name: Upload WASAPI loopback feasibility probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: WasapiLoopbackProbe-experimental
+          path: WasapiLoopbackProbe.exe
       - name: Upload Windows endpoint diagnostic
         uses: actions/upload-artifact@v4
         with:
