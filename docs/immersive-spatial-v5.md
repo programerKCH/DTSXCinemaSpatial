@@ -51,3 +51,15 @@ Design goal, not reverse engineering: expansive but coherent lateral and vertica
 3. Real Height routes to top channels only on genuinely compatible hardware; unsupported status is visible.
 4. Repeatable pans, flyover sounds, overhead rain and fixed centered dialogue: object positions stable, no clicking/booming/peak overload.
 5. Verify user setup: RTX 5080, Windows 11, Onkyo TX-NR6100, connected display; test eARC and direct-AVR separately for output caps and negotiated format.
+
+## Product priority clarified: Windows Home Theater spatial modes ONLY
+The user explicitly requires Dolby Atmos for Home Theater or DTS:X for Home Theater on Windows as the sole target runtime. Plain stereo, 5.1, and 7.1 speaker modes are NOT acceptable substitutes for acceptance tests. The PCM bed is an internal source format only, not the finished product.
+
+Mandatory delivery milestones:
+1. Implement and build a genuine Windows ISpatialAudioClient output host that queries live endpoint spatial capabilities and creates static/dynamic audio objects where supported.
+2. The runtime must use the system-selected Dolby Atmos for Home Theater / DTS:X for Home Theater output; validate actual provider capability at runtime rather than claiming it by name.
+3. Preserve v4.5's clean cinema DSP, center and bass; perform conservative energy-accounted conversion from source bed to spatial scene.
+4. Virtual Height should work through the available home-theater playback speakers using OS spatial rendering where supported; Real Height is a separate optional height-channel/object routing mode.
+5. Do not describe the existing Equalizer APO 5.1 VST2 preview as an Atmos/DTS:X renderer. It is a development prototype, not product completion.
+6. Acceptance tests must use the Home Theater spatial mode with AVR and compare disabling/enabling immersive processing. Do not require the user to switch Windows to plain stereo/5.1/7.1 for acceptance.
+7. If normal third-party application audio cannot be intercepted and re-rendered in-process, clearly disclose the host/APO integration limitation rather than implying that an ordinary VST2 automatically affects native spatial-object streams.
