@@ -34,6 +34,12 @@ jobs:
           g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/AmazeReferenceScenarios.cpp -o /tmp/AmazeReferenceScenarios
           /tmp/AmazeReferenceScenarios
 
+      - name: C++14 spatial object mapper
+        run: |
+          set -euxo pipefail
+          g++ -std=c++14 -O2 -Wall -Wextra -Werror Tests/SceneObjectMapperTests.cpp -o /tmp/SceneObjectMapperTests
+          /tmp/SceneObjectMapperTests
+
   windows-endpoint-probe:
     runs-on: windows-latest
     steps:
