@@ -28,12 +28,15 @@ class SceneEngine {
     float movement = 0, virtualEnvelope = 0;
     float heightLowL = 0, heightLowR = 0;
     float slowSurroundPower = 0;
+    float surroundLeftEnergy = 0, surroundRightEnergy = 0;
+    float surroundPan = 0;
 public:
     void reset(float rate) {
         sampleRate = std::max(rate, 8000.0f);
         leftEnergy = rightEnergy = centerEnergy = surroundEnergy = 0;
         previousAzimuth = smoothAzimuth = movement = virtualEnvelope = 0;
         heightLowL = heightLowR = slowSurroundPower = 0;
+        surroundLeftEnergy = surroundRightEnergy = surroundPan = 0;
     }
     Frame process(const std::array<float, 6>& input, HeightMode mode,
                   bool spatialRendererHasHeight, float amount = 1.0f) {
@@ -47,12 +50,21 @@ public:
         centerEnergy += energyStep * (input[2]*input[2] - centerEnergy);
         const float ambient = 0.5f * (input[4]*input[4] + input[5]*input[5]);
         surroundEnergy += energyStep * (ambient - surroundEnergy);
+        surroundLeftEnergy += energyStep * (input[4]*input[4] - surroundLeftEnergy);
+        surroundRightEnergy += energyStep * (input[5]*input[5] - surroundRightEnergy);
+        // Rear-channel direction helps virtual fly-bys continue across the listener.
+        const float rearTotal = surroundLeftEnergy + surroundRightEnergy;
+        const float rearPanTarget = (surroundRightEnergy - surroundLeftEnergy)/(rearTotal + 1.0e-8f);
+        surroundPan += directionStep * (rearPanTarget - surroundPan);
         // Slow scene loudness reference: duck artificial ambience during sudden loud effects.
         slowSurroundPower += smooth(1.0f) * (ambient - slowSurroundPower);
         const float transientRatio = ambient / (slowSurroundPower + 1.0e-7f);
         const float transientDuck = 1.0f / (1.0f + 0.15f * std::max(0.0f, transientRatio - 2.0f));
         const float total = leftEnergy + rightEnergy + centerEnergy + surroundEnergy + 1.0e-8f;
-        const float targetAz = 70.0f * (rightEnergy - leftEnergy) / total;
+        const float frontTotal = leftEnergy + rightEnergy + 1.0e-8f;
+        const float frontPan = (rightEnergy - leftEnergy)/frontTotal;
+        const float rearWeight = bounded(surroundEnergy/total,0.0f,1.0f);
+        const float targetAz = 70.0f * ((1.0f-rearWeight)*frontPan + rearWeight*surroundPan);
         smoothAzimuth += directionStep * (targetAz - smoothAzimuth);
         movement += smooth(5.0f) * (std::abs(smoothAzimuth - previousAzimuth) - movement);
         previousAzimuth = smoothAzimuth;
@@ -70,7 +82,10 @@ public:
             // balance) while widening only the difference signal. Bound peaks
             // conservatively; the main v4.5 DSP is not modified.
             const float side = 0.5f * (input[4] - input[5]);
-            const float delta = width * side;
+            // Subtle directional modulation of the rear difference signal:
+            // never invent a new sound or alter its mono sum.
+            const float directionCue = 0.35f * surroundPan * virtualEnvelope;
+            const float delta = (width + directionCue * 0.015f) * side;
             const float peak = std::max(std::fabs(input[4]), std::fabs(input[5]));
             const float headroom = std::max(0.0f, 0.98f - peak);
             const float safeDelta = bounded(delta, -headroom, headroom);
