@@ -43,6 +43,18 @@ int main() {
     assert(std::fabs(protectedFrame.channels[4])<=0.980001f);
     assert(std::fabs(protectedFrame.channels[5])<=0.980001f);
     assert(std::fabs(protectedFrame.channels[4]+protectedFrame.channels[5])<1e-5f);
+    // Rear fly-by must be distinguishable even with silent front channels.
+    engine.reset(48000);
+    immersive::Frame rearLeft{}, rearRight{};
+    const std::array<float,6> leftRear{{0,0,0,0,0.35f,0.02f}};
+    const std::array<float,6> rightRear{{0,0,0,0,0.02f,0.35f}};
+    for(int i=0;i<48000;++i)
+        rearLeft=engine.process(leftRear,immersive::HeightMode::Virtual,false);
+    for(int i=0;i<48000;++i)
+        rearRight=engine.process(rightRear,immersive::HeightMode::Virtual,false);
+    assert(rearLeft.scene.azimuth < -10.0f);
+    assert(rearRight.scene.azimuth > 10.0f);
+    assert(rearRight.channels[2] == 0.0f && rearRight.channels[3] == 0.0f);
     assert(virt.scene.azimuth < 0.0f);
     assert(std::isfinite(virt.scene.elevation));
 }
