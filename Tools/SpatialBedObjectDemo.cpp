@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     if (SUCCEEDED(hr)) hr=client->IsAudioObjectFormatSupported(&format);
     UINT32 available=0;
     if (SUCCEEDED(hr)) hr=client->GetMaxDynamicObjectCount(&available);
-    if (SUCCEEDED(hr) && available==0) hr=HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+    // A 5.1 static bed remains useful even when the endpoint has zero dynamic objects.
     if (SUCCEEDED(hr)) {
         ready=CreateEventW(nullptr,FALSE,FALSE,nullptr);
         if (!ready) hr=HRESULT_FROM_WIN32(GetLastError());
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
           AudioObjectType_FrontLeft|AudioObjectType_FrontRight|AudioObjectType_FrontCenter|
           AudioObjectType_LowFrequency|AudioObjectType_SideLeft|AudioObjectType_SideRight);
         params.MinDynamicObjectCount=0;
-        params.MaxDynamicObjectCount=1;
+        params.MaxDynamicObjectCount=(available>0)?1u:0u;
         params.Category=AudioCategory_SoundEffects;
         params.EventHandle=ready;
         params.NotifyObject=nullptr;
@@ -95,11 +95,16 @@ int main(int argc, char** argv) {
             UINT32 availableNow = 0, frames = 0;
             hr = stream->BeginUpdatingAudioObjects(&availableNow, &frames);
             if (FAILED(hr)) break;
+            if (frames==0) { const HRESULT ended=stream->EndUpdatingAudioObjects();
+                hr=FAILED(ended)?ended:HRESULT_FROM_WIN32(ERROR_INVALID_DATA); break; }
             HRESULT processing = S_OK;
             for (unsigned ch=0;ch<6 && SUCCEEDED(processing);++ch)
                 if (!staticObjects[ch]) processing=stream->ActivateSpatialAudioObject(staticTypes[ch],&staticObjects[ch]);
-            if (!moving && availableNow>0 && SUCCEEDED(processing))
-                processing=stream->ActivateSpatialAudioObject(AudioObjectType_Dynamic,&moving);
+            if (!moving && availableNow>0 && SUCCEEDED(processing)) {
+                // Losing an optional dynamic voice must never mute the six-channel bed.
+                ISpatialAudioObject* candidate=nullptr;
+                if (SUCCEEDED(stream->ActivateSpatialAudioObject(AudioObjectType_Dynamic,&candidate))) moving=candidate;
+            }
             std::vector<std::array<float,6>> bed(frames);
             std::vector<float> objectSignal(frames,0.0f);
             immersive::Frame scene{};
