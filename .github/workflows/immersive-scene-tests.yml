@@ -99,6 +99,16 @@ jobs:
         with:
           name: SpatialMovingObjectDemo-experimental
           path: SpatialMovingObjectDemo.exe
+      - name: Compile real WAV spatial object prototype
+        shell: pwsh
+        run: |
+          cl /nologo /std:c++17 /EHsc /W4 Tools/SpatialWavObjectDemo.cpp /Fe:SpatialWavObjectDemo.exe ole32.lib uuid.lib 2>&1 | Tee-Object -FilePath wav-object-build.log
+          if ($LASTEXITCODE -ne 0) { throw "Spatial WAV object demo compile failed ($LASTEXITCODE)" }
+      - name: Upload real WAV spatial object prototype
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpatialWavObjectDemo-experimental
+          path: SpatialWavObjectDemo.exe
       - name: Upload Windows endpoint diagnostic
         uses: actions/upload-artifact@v4
         with:
