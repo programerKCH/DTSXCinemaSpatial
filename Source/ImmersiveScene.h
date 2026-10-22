@@ -75,8 +75,12 @@ public:
         result.scene.elevation = 55.0f * diffuse; // proxy only; no true source location
         if (mode == HeightMode::Virtual) {
             // Virtual cue: subtle, source-derived, diffuse surround ONLY. No dialogue/LFE changes.
-            const float target = bounded(amount, 0.0f, 1.0f) * diffuse;
+            const float requested = bounded(amount, 0.0f, 1.0f);
+            const float target = requested * diffuse;
             virtualEnvelope += smooth(3.0f) * (target - virtualEnvelope);
+            // A bypassed virtual effect must not keep altering PCM while the
+            // smoothed envelope decays. This also preserves A/B comparability.
+            if (requested <= 0.0f) return result;
             const float width = bounded(0.08f * virtualEnvelope * transientDuck, 0.0f, 0.08f);
             // Preserve the original rear-channel sum (mono ambience and bass
             // balance) while widening only the difference signal. Bound peaks
