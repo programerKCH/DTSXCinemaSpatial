@@ -67,6 +67,16 @@ jobs:
         with:
           name: SpatialStreamActivationSmoke-experimental
           path: SpatialStreamActivationSmoke.exe
+      - name: Compile moving spatial object demonstration
+        shell: pwsh
+        run: |
+          cl /nologo /std:c++17 /EHsc /W4 Tools/SpatialMovingObjectDemo.cpp /Fe:SpatialMovingObjectDemo.exe ole32.lib uuid.lib 2>&1 | Tee-Object -FilePath moving-object-build.log
+          if ($LASTEXITCODE -ne 0) { throw "Spatial moving object compile failed ($LASTEXITCODE)" }
+      - name: Upload moving spatial object demonstration
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpatialMovingObjectDemo-experimental
+          path: SpatialMovingObjectDemo.exe
       - name: Upload Windows endpoint diagnostic
         uses: actions/upload-artifact@v4
         with:
