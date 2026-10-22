@@ -63,6 +63,20 @@ int main() {
     const auto reenabled = engine.process(x, immersive::HeightMode::Virtual, false, 1.0f);
     for(float channel : reenabled.channels) assert(std::isfinite(channel));
     assert(reenabled.channels[2] == x[2] && reenabled.channels[3] == x[3]);
+    // Runtime toggle regression: Off must always return bit-exact PCM,
+    // regardless of previously active Virtual processing and direction state.
+    engine.reset(48000);
+    for (int i=0;i<9600;++i) {
+        const std::array<float,6> signal{{0.3f,-0.2f,0.15f,0.1f,
+                                          (i%2==0)?0.24f:-0.24f,0.13f}};
+        const auto enabled=engine.process(signal,immersive::HeightMode::Virtual,false,1.0f);
+        assert(enabled.channels[2]==signal[2] && enabled.channels[3]==signal[3]);
+        assert(std::fabs(enabled.channels[4]+enabled.channels[5]-signal[4]-signal[5])<1e-6f);
+        const auto disabled=engine.process(signal,immersive::HeightMode::Virtual,false,0.0f);
+        assert(disabled.channels==signal);
+        const auto offNow=engine.process(signal,immersive::HeightMode::Off,false,1.0f);
+        assert(offNow.channels==signal);
+    }
     assert(virt.scene.azimuth < 0.0f);
     assert(std::isfinite(virt.scene.elevation));
 }
