@@ -115,6 +115,16 @@ jobs:
         with:
           name: SpatialWavObjectDemo-experimental
           path: SpatialWavObjectDemo.exe
+      - name: Compile integrated spatial bed and object WAV player
+        shell: pwsh
+        run: |
+          cl /nologo /std:c++17 /EHsc /W4 Tools/SpatialBedObjectDemo.cpp /Fe:SpatialBedObjectDemo.exe ole32.lib uuid.lib 2>&1 | Tee-Object -FilePath integrated-player-build.log
+          if ($LASTEXITCODE -ne 0) { throw "Integrated spatial player failed ($LASTEXITCODE)" }
+      - name: Upload integrated spatial bed and object player
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpatialBedObjectDemo-experimental
+          path: SpatialBedObjectDemo.exe
       - name: Upload Windows endpoint diagnostic
         uses: actions/upload-artifact@v4
         with:
