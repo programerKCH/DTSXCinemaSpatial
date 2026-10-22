@@ -1,0 +1,14 @@
+name: Immersive Scene Prototype Tests
+on:
+  push:
+    branches: [experimental/immersive-spatial-v5]
+  workflow_dispatch:
+jobs:
+  scene-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and test scene engine
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror Tests/ImmersiveSceneTests.cpp -o /tmp/immersive-scene-tests
+          /tmp/immersive-scene-tests
