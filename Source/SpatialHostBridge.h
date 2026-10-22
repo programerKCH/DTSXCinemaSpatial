@@ -27,7 +27,7 @@ public:
     void configure(HeightMode mode, HostCapabilities available, float amount) {
         requested = mode;
         caps = available;
-        wet = std::clamp(amount, 0.0f, 1.0f);
+        wet = bounded(amount, 0.0f, 1.0f);
     }
     Route selectedRoute() const {
         if (requested == HeightMode::Virtual) return Route::Virtual51;
