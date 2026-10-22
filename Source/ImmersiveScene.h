@@ -6,6 +6,8 @@
 // Experimental source-independent spatial scene analysis. No codec encoding.
 namespace immersive {
 enum class HeightMode { Off, Virtual, Real };
+inline float clamp01(float x) { return std::max(0.0f, std::min(1.0f, x)); }
+inline float bounded(float x, float lo, float hi) { return std::max(lo, std::min(hi, x)); }
 struct ObjectEstimate {
     float azimuth = 0.0f;     // degrees: left negative
     float elevation = 0.0f;   // heuristic, NOT authored metadata
@@ -55,15 +57,15 @@ public:
         movement += smooth(5.0f) * (std::abs(smoothAzimuth - previousAzimuth) - movement);
         previousAzimuth = smoothAzimuth;
         result.scene.azimuth = smoothAzimuth;
-        result.scene.confidence = std::clamp((leftEnergy + rightEnergy) / total * (1.0f - centerEnergy / total), 0.0f, 1.0f);
-        result.scene.motion = std::clamp(movement * 0.1f, 0.0f, 1.0f);
-        const float diffuse = std::clamp(surroundEnergy / total, 0.0f, 1.0f);
+        result.scene.confidence = bounded((leftEnergy + rightEnergy) / total * (1.0f - centerEnergy / total), 0.0f, 1.0f);
+        result.scene.motion = bounded(movement * 0.1f, 0.0f, 1.0f);
+        const float diffuse = bounded(surroundEnergy / total, 0.0f, 1.0f);
         result.scene.elevation = 55.0f * diffuse; // proxy only; no true source location
         if (mode == HeightMode::Virtual) {
             // Virtual cue: subtle, source-derived, diffuse surround ONLY. No dialogue/LFE changes.
-            const float target = std::clamp(amount, 0.0f, 1.0f) * diffuse;
+            const float target = bounded(amount, 0.0f, 1.0f) * diffuse;
             virtualEnvelope += smooth(3.0f) * (target - virtualEnvelope);
-            const float width = std::clamp(0.08f * virtualEnvelope * transientDuck, 0.0f, 0.08f);
+            const float width = bounded(0.08f * virtualEnvelope * transientDuck, 0.0f, 0.08f);
             result.channels[4] = input[4] + width * (input[4] - input[5]);
             result.channels[5] = input[5] + width * (input[5] - input[4]);
         } else if (mode == HeightMode::Real && spatialRendererHasHeight) {
@@ -72,7 +74,7 @@ public:
             const float alpha = smooth(650.0f);
             heightLowL += alpha * (input[4] - heightLowL);
             heightLowR += alpha * (input[5] - heightLowR);
-            const float wet = std::clamp(amount, 0.0f, 1.0f) * 0.22f * diffuse * transientDuck;
+            const float wet = bounded(amount, 0.0f, 1.0f) * 0.22f * diffuse * transientDuck;
             // No ghost height when the authored surround channel has fallen silent.
             const float extractedL = input[4] == 0.0f ? 0.0f : wet * (input[4] - heightLowL);
             const float extractedR = input[5] == 0.0f ? 0.0f : wet * (input[5] - heightLowR);
