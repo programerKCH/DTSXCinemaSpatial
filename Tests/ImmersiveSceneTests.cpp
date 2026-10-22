@@ -11,7 +11,18 @@ int main() {
     auto unsupported = engine.process(x, immersive::HeightMode::Real, false);
     assert(unsupported.channels == x && !unsupported.realHeightActive);
     auto supported = engine.process(x, immersive::HeightMode::Real, true);
-    assert(supported.channels == x && supported.realHeightActive);
+    assert(supported.realHeightActive);
+    assert(supported.channels[0] == x[0] && supported.channels[1] == x[1]);
+    assert(supported.channels[2] == x[2] && supported.channels[3] == x[3]);
+    assert(std::fabs((supported.channels[4] + supported.height[0]) - x[4]) < 1e-6f);
+    assert(std::fabs((supported.channels[5] + supported.height[1]) - x[5]) < 1e-6f);
+    immersive::Frame height{};
+    for (int i=0;i<48000;++i)
+        height = engine.process(x, immersive::HeightMode::Real, true);
+    assert(std::fabs(height.height[0]) > 1e-8f || std::fabs(height.height[1]) > 1e-8f ||
+           (std::fabs(height.channels[4]-x[4]) < 1e-6f && std::fabs(height.channels[5]-x[5]) < 1e-6f));
+    assert(std::fabs(height.channels[4] + height.height[0] - x[4]) < 1e-6f);
+    assert(std::fabs(height.channels[5] + height.height[1] - x[5]) < 1e-6f);
     immersive::Frame virt{};
     for (int i=0;i<48000;++i) virt = engine.process(x, immersive::HeightMode::Virtual, false);
     assert(virt.channels[0] == x[0] && virt.channels[1] == x[1] &&
