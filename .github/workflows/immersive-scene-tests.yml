@@ -30,8 +30,16 @@ jobs:
       - name: Compile Windows WASAPI endpoint diagnostic
         shell: cmd
         run: cl /nologo /std:c++17 /EHsc /W4 Tools\WindowsEndpointProbe.cpp /Fe:WindowsEndpointProbe.exe ole32.lib uuid.lib
+      - name: Compile Windows spatial object capability probe
+        shell: cmd
+        run: cl /nologo /std:c++17 /EHsc /W4 Tools\WindowsSpatialCapabilityProbe.cpp /Fe:WindowsSpatialCapabilityProbe.exe ole32.lib uuid.lib
       - name: Upload Windows endpoint diagnostic
         uses: actions/upload-artifact@v4
         with:
           name: WindowsEndpointProbe-experimental
           path: WindowsEndpointProbe.exe
+      - name: Upload spatial capability diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: WindowsSpatialCapabilityProbe-experimental
+          path: WindowsSpatialCapabilityProbe.exe
