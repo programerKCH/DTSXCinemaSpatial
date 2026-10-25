@@ -2,7 +2,7 @@ name: Build DTSXCinemaSpatial Clean Impact Experiment
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [experimental/clean-impact-headroom]
 jobs:
   build:
     runs-on: windows-latest
