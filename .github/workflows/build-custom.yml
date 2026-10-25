@@ -1,4 +1,4 @@
-name: Build DTSXCinemaSpatial Clean Impact Experiment
+name: Build CinemaSpatial v4.5 Clean Impact
 on:
   workflow_dispatch:
   push:
@@ -90,10 +90,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path artifact | Out-Null
           $dll = Get-ChildItem -Path Builds\VisualStudio2017 -Recurse -Filter DTSXCinemaSpatial.dll | Where-Object { $_.FullName -match "Release" } | Select-Object -First 1
           if (-not $dll) { throw "DTSXCinemaSpatial.dll not found" }
-          Copy-Item $dll.FullName artifact\DTSXCinemaSpatial-CleanImpact-Experiment.dll
+          Copy-Item $dll.FullName artifact\CinemaSpatial v4.5.dll
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DTSXCinemaSpatial-CleanImpact-Experiment
-          path: artifact/DTSXCinemaSpatial-CleanImpact-Experiment.dll
+          name: CinemaSpatial v4.5
+          path: artifact/CinemaSpatial v4.5.dll
           if-no-files-found: error
