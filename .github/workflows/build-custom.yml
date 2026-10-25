@@ -95,5 +95,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DTSXCinemaSpatial-CleanImpact-Experiment
-          path: artifact/DTSXCinemaSpatial-v4.5-QualityModes.dll
+          path: artifact/DTSXCinemaSpatial-CleanImpact-Experiment.dll
           if-no-files-found: error
